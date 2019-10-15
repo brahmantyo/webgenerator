@@ -1,2 +1,4 @@
 .deleted/*
 !.deleted/.gitignore
+config/*
+!config/.gitignore
