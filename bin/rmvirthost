@@ -1,0 +1,37 @@
+#init
+HOME=/home/bram/tmp/generator-web
+APACHE=/etc/apache2
+APACHEPOOL=$APACHE/sites-enabled
+HOSTPOOL=www
+
+CONFIGDIR=$HOME/config
+TEMPLDIR=$HOME/template
+
+
+VNAME=$1
+VDOMAIN=$2
+if [ $VDOMAIN ]; then
+   VHOSTNAME=$VNAME.$VDOMAIN
+else
+   VHOSTNAME=$VNAME
+fi
+
+if [ ! -d .deleted ]; then
+   mkdir .deleted 
+fi
+
+
+#create apache config
+rm $APACHEPOOL/$VHOSTNAME.conf
+mv $CONFIGDIR/$VHOSTNAME.conf .deleted
+service apache2 reload
+echo "Apache configuration deleted"
+
+
+#create virtual host
+if [ -d /$HOSTPOOL/$VHOSTNAME ]; then
+   cp -Rf /$HOSTPOOL/$VHOSTNAME .deleted/
+   rm -rf /$HOSTPOOL/$VHOSTNAME
+fi
+
+echo "$VHOSTNAME move to .deleted folder"

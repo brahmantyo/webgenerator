@@ -1,0 +1,12 @@
+Listen 80
+<VirtualHost *:80>
+    DocumentRoot "/ROOTDIR/VHOSTNAME"
+    ServerName VHOSTNAME
+
+    # Other directives here
+    <Directory "/ROOTDIR/VHOSTNAME">
+      Order allow,deny
+      Allow from all
+      Require all granted
+    </Directory>
+</VirtualHost>

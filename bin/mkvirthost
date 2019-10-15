@@ -1,0 +1,59 @@
+#init
+HOME=/home/bram/tmp/generator-web
+APACHE=/etc/apache2
+APACHEPOOL=$APACHE/sites-enabled
+HOSTPOOL=www
+
+CONFIGDIR=$HOME/config
+TEMPLDIR=$HOME/template
+
+if [ ! $1 ] && [ ! $2 ]; then
+exit
+fi
+
+VNAME=$1
+VDOMAIN=$2
+OPR=$3
+if [ $VDOMAIN ]; then
+   VHOSTNAME=$VNAME.$VDOMAIN
+else
+   VHOSTNAME=$VNAME
+fi
+
+
+#create virtual host
+mkdir /$HOSTPOOL/$VHOSTNAME
+echo "<p><h1>WELCOME TO www.$VHOSTNAME</h1></p>" > /$HOSTPOOL/$VHOSTNAME/index.html
+cat /$TEMPLDIR/index.html >> /$HOSTPOOL/$VHOSTNAME/index.html
+if [ ! -d /$HOSTPOOL/$VHOSTNAME ] && [ ! -f /$HOSTPOOL/$VHOSTNAME/index.htm ]; then
+   echo "ERROR: Cannot create virtual host"
+   exit 1
+fi
+echo "Virtual host created"
+
+#create apache config
+cat $TEMPLDIR/config_template | sed -e "s/ROOTDIR/$HOSTPOOL/" | sed -e "s/VHOSTNAME/$VHOSTNAME/" > $CONFIGDIR/$VHOSTNAME.conf
+ln -s $CONFIGDIR/$VHOSTNAME.conf $APACHEPOOL
+
+service apache2 reload
+
+if [ ! -f $CONFIGDIR/$VHOSTNAME.conf ]; then
+   echo "ERROR: Config file not yet created"
+   exit 2
+fi
+
+if [ ! -h $APACHEPOOL/$VHOSTNAME.conf ]; then
+   echo "ERROR: Cannot create apache configuration"
+   exit 3
+fi
+
+echo "Apache configuration created"
+
+#set permission of virtual directory
+echo "Set permission of Pool directory for $OPR"
+find /$HOSTPOOL -type d -name $VHOSTNAME -exec chown -R $OPR:www-data {} \;
+find /$HOSTPOOL -type d -name $VHOSTNAME -exec chmod 2770 {} \;
+find /$HOSTPOOL -type f -name $VHOSTNAME -exec chmod 0660 {} \;
+
+echo "Permission set"
+
